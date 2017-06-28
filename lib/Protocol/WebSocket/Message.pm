@@ -6,7 +6,16 @@ use warnings;
 use base 'Protocol::WebSocket::Stateful';
 
 use Scalar::Util qw(readonly);
-require Digest::MD5;
+BEGIN {
+    eval {
+        require Digest::MD5;
+        import Digest::MD5 'md5'
+    };
+    if ($@) { # ups, no Digest::MD5
+        require Digest::Perl::MD5;
+        import Digest::Perl::MD5 'md5'
+    }
+}
 
 sub new {
     my $class = shift;
@@ -88,7 +97,7 @@ sub checksum {
     $checksum .= pack 'N' => $self->number1;
     $checksum .= pack 'N' => $self->number2;
     $checksum .= $self->challenge;
-    $checksum = Digest::MD5::md5($checksum);
+    $checksum = md5($checksum);
 
     return $self->{checksum} ||= $checksum;
 }

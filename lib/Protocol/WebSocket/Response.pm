@@ -7,7 +7,16 @@ use base 'Protocol::WebSocket::Message';
 
 require Carp;
 use MIME::Base64 ();
-use Digest::SHA ();
+BEGIN {
+    eval {
+        require Digest::SHA;
+        import Digest::SHA 'sha1'
+    };
+    if ($@) { # ups, no Digest::SHA
+        require Digest::SHA::PurePerl;
+        import Digest::SHA::PurePerl 'sha1'
+    }
+}
 
 use Protocol::WebSocket::URL;
 use Protocol::WebSocket::Cookie::Response;
@@ -91,7 +100,7 @@ sub headers {
 
         my $key = $self->key;
         $key .= '258EAFA5-E914-47DA-95CA-C5AB0DC85B11'; # WTF
-        $key = Digest::SHA::sha1($key);
+        $key = sha1($key);
         $key = MIME::Base64::encode_base64($key);
         $key =~ s{\s+}{}g;
 
@@ -147,7 +156,12 @@ sub _parse_first_line {
 
     my $status = $self->status;
     unless ($line =~ m{^HTTP/1\.1 $status }) {
-        $self->error('Wrong response line');
+        my ($code, $msg) = $line =~ m{^HTTP/1\.1 (\d{3}) (.*)};
+        if ($code) {
+            $self->error('Wrong response code [' . $code . ($msg ? ' ' . $msg : '') . '], when expected ' . $status);
+        } else {
+            $self->error('Wrong response line');
+        }
         return;
     }
 
