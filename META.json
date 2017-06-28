@@ -101,6 +101,7 @@
       },
       "homepage" : "https://github.com/vti/protocol-websocket",
       "repository" : {
+         "type" : "git",
          "url" : "git://github.com/vti/protocol-websocket.git",
          "web" : "https://github.com/vti/protocol-websocket"
       }
@@ -121,5 +122,5 @@
       "Graham Ollis <plicease@cpan.org>",
       "vti <viacheslav.t@gmail.com>"
    ],
-   "x_serialization_backend" : "JSON::PP version 2.27300_01"
+   "x_serialization_backend" : "JSON::PP version 2.27300"
 }
